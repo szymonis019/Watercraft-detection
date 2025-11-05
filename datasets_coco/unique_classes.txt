@@ -1,0 +1,38 @@
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+aircraft carrier
+buoy
+canoe
+cargo
+carrier
+civilianship
+coastguard
+container
+container-warship-ships-buoys
+cruise
+fish-b
+human-drowning
+human-swimming
+human-water
+krazownik rakietowy
+lotniskowiec
+niszczyciel rakietowy
+okret desantowy
+okret podwodny
+przybrzezny okret bojowy
+sail boat
+ships
+speedboat
+submarine
+tanker
+uniwersalny okret desantowy
+vessel-z4gu
+warship
