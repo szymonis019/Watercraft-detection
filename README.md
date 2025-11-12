@@ -5,6 +5,8 @@
 
 Projekt korzysta z pkilku zbiorów danych dotyczących statków i jednostek pływających. Wszystkie zbiory, pierwotnie w formatach COCO, YOLO oraz XML (Pascal VOC), zostały zunifikowane do formatu COCO, co umożliwia ich bezpośrednie wykorzystanie w zadaniach detekcji obiektów.  
 
+[LINK Google Drive](https://drive.google.com/drive/folders/1xoklcxfbKVtYOUKIa7nXU2pa5leib2VM?usp=drive_link)
+
 ### Szczegóły zbiorów
 
  Wszystkie zbiory zostały dostosowane do **formatu COCO**, co zapewnia spójność adnotacji i gotowość do trenowania modeli detekcji obiektów.
