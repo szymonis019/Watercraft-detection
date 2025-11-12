@@ -24,7 +24,7 @@ Projekt korzysta z pkilku zbiorów danych dotyczących statków i jednostek pły
 Łącznie w zbiorach znajduje się **76 823 obiekty**.
 Łącznie w zbiorach znajduje się **54 463** obrazy. Podział na zbiory:  
 
-| Split | Liczba adnotacji | Procent |
+| Split | Liczba zdjęć | Procent |
 |-------|----------------:|--------:|
 | Train | 43 347 | 79,59% |
 | Valid | 6 339  | 11,64% |
