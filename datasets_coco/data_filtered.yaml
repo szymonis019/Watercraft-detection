@@ -1,0 +1,22 @@
+names:
+- Aircraft carrier
+- Auxiliary ship
+- Boat
+- Bulk carrier
+- Car carrier
+- Container ship
+- Destroyer
+- Fishing boat
+- General cargo ship
+- Landing ship
+- Passenger ship
+- Sail boat
+- Speedboat
+- Submarine
+- Support Ship
+- Tanker
+- Tugboat
+nc: 17
+test: C:\Users\Szymon\Desktop\Watercraft-detection\datasets_coco\test/images
+train: C:\Users\Szymon\Desktop\Watercraft-detection\datasets_coco\train/images
+val: C:\Users\Szymon\Desktop\Watercraft-detection\datasets_coco\valid/images
