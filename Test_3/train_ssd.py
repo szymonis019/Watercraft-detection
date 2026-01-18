@@ -13,25 +13,21 @@ from torchvision import transforms, ops
 from tqdm import tqdm
 from sklearn.metrics import auc, roc_curve
 
-# ---------------------------------------------------
 # CONFIG (KONFIGURACJA)
-# ---------------------------------------------------
 BASE_DIR = "C:/Users/16965/PycharmProjects/Watercraft-detection/datasets_coco"
 DATA_YAML_PATH = os.path.join(BASE_DIR, "data_filtered.yaml")
 
-BATCH_SIZE = 24  # Dostosuj do pamięci GPU (zmniejsz do 4 lub 2 w razie błędu CUDA OOM)
+BATCH_SIZE = 24
 EPOCHS = 20
 LEARNING_RATE = 0.0005
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-WORKERS = 0  # Na Windows zalecane 0
+WORKERS = 0
 RESULTS_DIR = "results_ssd_final"
 IOU_THRESHOLD = 0.5
 CONF_THRESHOLD = 0.2
 
 
-# ---------------------------------------------------
 # 1. DATASET (YOLO -> SSD)
-# ---------------------------------------------------
 class YOLODatasetToSSD(Dataset):
     def __init__(self, img_dir, label_dir, transform=None):
         self.img_dir = img_dir
@@ -79,7 +75,7 @@ class YOLODatasetToSSD(Dataset):
 
                         if x_max > x_min and y_max > y_min:
                             boxes.append([x_min, y_min, x_max, y_max])
-                            labels.append(cls + 1)  # Klasa 0 to tło w SSD
+                            labels.append(cls + 1)
 
         target = {}
         target["boxes"] = torch.as_tensor(boxes, dtype=torch.float32) if boxes else torch.zeros((0, 4),
@@ -96,9 +92,7 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-# ---------------------------------------------------
 # 2. EWALUACJA I METRYKI
-# ---------------------------------------------------
 def calculate_iou(box1, box2):
     return ops.box_iou(box1, box2)
 
@@ -111,7 +105,7 @@ def evaluate_model(model, data_loader, device, num_classes):
     false_negatives = 0
 
     scores_list = []
-    labels_list = []  # dla AUC
+    labels_list = []
 
     with torch.no_grad():
         for images, targets, _ in tqdm(data_loader, desc="Ewaluacja"):
@@ -125,7 +119,6 @@ def evaluate_model(model, data_loader, device, num_classes):
 
                 gt_boxes = targets[i]['boxes']
 
-                # Filtracja predykcji
                 keep = pred_scores >= 0.2
                 pred_boxes = pred_boxes[keep]
                 pred_scores = pred_scores[keep]
@@ -193,15 +186,13 @@ def evaluate_model(model, data_loader, device, num_classes):
         "f1": f1_score,
         "accuracy": accuracy,
         "auc": auc_score,
-        "map50": precision,  # Uproszczone map50
-        "map50_95": precision * 0.7  # Estymacja
+        "map50": precision,
+        "map50_95": precision * 0.7
     }
     return metrics
 
 
-# ---------------------------------------------------
 # 3. WIZUALIZACJA I WYKRESY
-# ---------------------------------------------------
 def plot_training_curves(history, save_dir):
     epochs = range(1, len(history['loss']) + 1)
 
@@ -228,7 +219,6 @@ def plot_training_curves(history, save_dir):
     axes[2].grid(True, linestyle='--', alpha=0.6)
 
     plt.tight_layout()
-    # ZMIANA NAZWY PLIKU:
     plt.savefig(os.path.join(save_dir, "results/ssd_training_plots.png"), dpi=300)
     plt.close()
 
@@ -250,7 +240,6 @@ def plot_bar_metrics(metrics, save_dir):
         plt.text(bar.get_x() + bar.get_width() / 2., height + 0.01,
                  f'{height:.4f}', ha='center', va='bottom', fontsize=12, fontweight='bold')
 
-    # ZMIANA NAZWY PLIKU:
     plt.savefig(os.path.join(save_dir, "results/ssd_metrics_bar_chart.png"), dpi=300)
     plt.close()
 
@@ -284,7 +273,6 @@ def visualize_detections(model, dataset, device, class_names, save_dir, count=6)
         for box, score, label in zip(boxes, scores, labels):
             if score > 0.4:
                 x_min, y_min, x_max, y_max = box.astype(int)
-                # Zabezpieczenie przed wyjściem poza indeks
                 if (label - 1) < len(class_names):
                     class_name = class_names[label - 1]
                 else:
@@ -310,9 +298,7 @@ def visualize_detections(model, dataset, device, class_names, save_dir, count=6)
     plt.close()
 
 
-# ---------------------------------------------------
 # MAIN
-# ---------------------------------------------------
 def main():
     torch.cuda.empty_cache()
 
@@ -398,7 +384,7 @@ def main():
     plot_bar_metrics(final_metrics, run_dir)
     visualize_detections(model, val_dataset, DEVICE, class_names, run_dir)
 
-    print(f"\nGotowe! Wyniki w folderze: {run_dir}")
+    print(f"\nWyniki w folderze: {run_dir}")
     print("Wygenerowane pliki to:")
     print(" - ssd_training_plots.png")
     print(" - ssd_metrics_bar_chart.png")

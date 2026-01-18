@@ -17,22 +17,18 @@ YAML_PATH = os.path.join(BASE_DIR, "data_filtered.yaml")
 RESULTS_DIR = "results_ssd_final"
 OUTPUT_DIR = "results_ssd_visualized_test"
 
-CONFIDENCE_THRESHOLD = 0.35  # Pokaż tylko detekcje z pewnością > 35%
+CONFIDENCE_THRESHOLD = 0.35
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-# ---------------------------------------------------
 # 1. FUNKCJA ZNAJDUJĄCA OSTATNI MODEL
-# ---------------------------------------------------
 def get_latest_model_path(results_dir):
-    # Szukamy folderów run_*, sortujemy po czasie utworzenia
     search_path = os.path.join(results_dir, "run_*")
     runs = glob.glob(search_path)
 
     if not runs:
         raise FileNotFoundError(f"Nie znaleziono żadnych folderów treningowych w {results_dir}")
 
-    # Sortujemy, najnowszy na końcu
     latest_run = max(runs, key=os.path.getmtime)
     model_path = os.path.join(latest_run, "ssd_final.pth")
 
@@ -43,31 +39,23 @@ def get_latest_model_path(results_dir):
     return model_path
 
 
-# ---------------------------------------------------
 # 2. DEFINICJA MODELU (Musi być taka sama jak w treningu)
-# ---------------------------------------------------
 def get_ssd_model(num_classes):
-    # Wczytujemy pustą strukturę (bez wag ImageNet, bo ładujemy własne)
     model = ssd300_vgg16(weights=None, weights_backbone=None)
 
-    # Odtwarzamy głowicę
     in_channels = [512, 1024, 512, 256, 256, 256]
     num_anchors = model.anchor_generator.num_anchors_per_location()
 
-    # num_classes + 1 (klasy użytkownika + tło)
     model.head = SSDHead(in_channels, num_anchors, num_classes + 1)
 
     return model
 
 
-# ---------------------------------------------------
 # MAIN
-# ---------------------------------------------------
 def main():
     print(f"Using device: {DEVICE}")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    # 1. Wczytanie nazw klas
     if not os.path.exists(YAML_PATH):
         print(f"Błąd: Nie znaleziono pliku {YAML_PATH}")
         return
@@ -75,16 +63,12 @@ def main():
     with open(YAML_PATH, "r") as f:
         cfg = yaml.safe_load(f)
 
-    # Klasa 0 to background, więc nasze klasy to 1..N
     class_names = ["background"] + cfg["names"]
     num_classes = len(cfg["names"])
     print(f"Liczba klas (bez tła): {num_classes}")
 
-    # 2. Ładowanie modelu
     try:
         model_path = get_latest_model_path(RESULTS_DIR)
-        # JEŚLI CHCESZ PODAĆ ŚCIEŻKĘ RĘCZNIE, ODKOMENTUJ LINIĘ NIŻEJ:
-        # model_path = "results_ssd_final/run_2023XXXX/ssd_final.pth"
     except FileNotFoundError as e:
         print(e)
         return
@@ -95,7 +79,6 @@ def main():
     model.to(DEVICE)
     model.eval()
 
-    # 3. Testowanie
     test_files = [f for f in os.listdir(TEST_IMAGES_DIR) if f.lower().endswith((".jpg", ".png", ".jpeg"))]
     print(f"Znaleziono {len(test_files)} obrazów w folderze testowym.")
 
@@ -117,18 +100,14 @@ def main():
             img_rgb = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
 
             # Zamiana na Tensor (Wartości 0-1)
-            # UWAGA: Nie robimy tu resize! Model SSD z Torchvision ma wbudowany
-            # transform, który sam przeskaluje obraz i potem przeskaluje wyniki z powrotem.
             img_tensor = F.to_tensor(img_rgb).to(DEVICE)
 
-            # Inferencja (input musi być listą tensorów)
             preds = model([img_tensor])[0]
 
             # Wizualizacja
             out_img = orig_img.copy()
             found_any = False
 
-            # Wyciągamy wyniki (są już w skali oryginalnego obrazka!)
             boxes = preds['boxes'].cpu().numpy()
             scores = preds['scores'].cpu().numpy()
             labels = preds['labels'].cpu().numpy()
@@ -166,7 +145,7 @@ def main():
             if found_any:
                 print(f" -> {img_name}: WYKRYTO OBIEKTY")
 
-    print(f"\nZakończono! Wyniki sprawdź w folderze: {os.path.abspath(OUTPUT_DIR)}")
+    print(f"\nWyniki sprawdź w folderze: {os.path.abspath(OUTPUT_DIR)}")
 
 
 if __name__ == "__main__":
